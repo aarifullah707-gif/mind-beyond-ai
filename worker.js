@@ -1,8 +1,8 @@
-
 export default {
   async fetch(request, env) {
     const headers = {
       "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
       "Content-Type": "application/json"
     };
@@ -12,28 +12,25 @@ export default {
     }
 
     if (request.method === "GET") {
-      return new Response(
-        JSON.stringify({ app: "MIND BEYOND", status: "ONLINE" }),
-        { headers }
-      );
+      return new Response(JSON.stringify({
+        app: "MIND BEYOND",
+        status: "ONLINE"
+      }), { headers });
     }
 
     if (request.method !== "POST") {
-      return new Response(
-        JSON.stringify({ error: "Use POST method" }),
-        { status: 405, headers }
-      );
+      return new Response(JSON.stringify({
+        error: "Use POST method"
+      }), { status: 405, headers });
     }
 
     try {
       const body = await request.json();
-      const prompt = body.prompt;
 
-      if (!prompt || typeof prompt !== "string") {
-        return new Response(
-          JSON.stringify({ error: "Please enter a prompt" }),
-          { status: 400, headers }
-        );
+      if (!body.prompt || typeof body.prompt !== "string") {
+        return new Response(JSON.stringify({
+          error: "Please enter a prompt"
+        }), { status: 400, headers });
       }
 
       const result = await env.AI.run(
@@ -42,28 +39,24 @@ export default {
           messages: [
             {
               role: "system",
-              content: "You are Mind Beyond. Think deeply, identify root causes, examine evidence and give practical solutions."
+              content: "You are Mind Beyond. Analyze deeply, find root causes, examine evidence and provide practical solutions."
             },
             {
               role: "user",
-              content: prompt.slice(0, 1000)
+              content: body.prompt.slice(0, 1000)
             }
           ]
         }
       );
 
-      return new Response(
-        JSON.stringify({ answer: result.response || result }),
-        { headers }
-      );
+      return new Response(JSON.stringify({
+        answer: result.response || result
+      }), { headers });
 
     } catch (error) {
-      return new Response(
-        JSON.stringify({
-          error: error.message || String(error)
-        }),
-        { status: 500, headers }
-      );
+      return new Response(JSON.stringify({
+        error: error.message || String(error)
+      }), { status: 500, headers });
     }
   }
 };
