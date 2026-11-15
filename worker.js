@@ -58,6 +58,14 @@ export default {
       );
 
     } catch (error) {
+  return Response.json(
+    {
+      error: "AI request failed",
+      details: error instanceof Error ? error.message : String(error)
+    },
+    { status: 500, headers: cors }
+  );
+}
       return Response.json(
         { error: "AI request failed. Please try again." },
         { status: 500, headers: cors }
