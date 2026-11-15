@@ -1,37 +1,38 @@
 
 export default {
   async fetch(request, env) {
-    const cors = {
+    const headers = {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type"
+      "Access-Control-Allow-Headers": "Content-Type",
+      "Content-Type": "application/json"
     };
 
     if (request.method === "OPTIONS") {
-      return new Response(null, { headers: cors });
+      return new Response(null, { headers });
     }
 
     if (request.method === "GET") {
-      return Response.json({
-        app: "MIND BEYOND",
-        status: "AI READY"
-      }, { headers: cors });
+      return new Response(
+        JSON.stringify({ app: "MIND BEYOND", status: "ONLINE" }),
+        { headers }
+      );
     }
 
     if (request.method !== "POST") {
-      return Response.json(
-        { error: "Method not allowed" },
-        { status: 405, headers: cors }
+      return new Response(
+        JSON.stringify({ error: "Use POST method" }),
+        { status: 405, headers }
       );
     }
 
     try {
-      const { prompt } = await request.json();
+      const body = await request.json();
+      const prompt = body.prompt;
 
       if (!prompt || typeof prompt !== "string") {
-        return Response.json(
-          { error: "Please enter a problem." },
-          { status: 400, headers: cors }
+        return new Response(
+          JSON.stringify({ error: "Please enter a prompt" }),
+          { status: 400, headers }
         );
       }
 
@@ -41,7 +42,7 @@ export default {
           messages: [
             {
               role: "system",
-              content: "You are Mind Beyond, an intelligent problem-solving assistant. Analyze problems carefully, identify root causes, evaluate uncertainty, and suggest practical solutions."
+              content: "You are Mind Beyond. Think deeply, identify root causes, examine evidence and give practical solutions."
             },
             {
               role: "user",
@@ -51,18 +52,17 @@ export default {
         }
       );
 
-      return Response.json(
-        { answer: result.response || result },
-        { headers: cors }
+      return new Response(
+        JSON.stringify({ answer: result.response || result }),
+        { headers }
       );
 
     } catch (error) {
-      return Response.json(
-        {
-          error: "AI request failed",
-          details: error instanceof Error ? error.message : String(error)
-        },
-        { status: 500, headers: cors }
+      return new Response(
+        JSON.stringify({
+          error: error.message || String(error)
+        }),
+        { status: 500, headers }
       );
     }
   }
